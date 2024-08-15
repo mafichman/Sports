@@ -1,0 +1,70 @@
+# Phillies quality of opponent
+
+library(tidyverse)
+library(baseballr)
+library(lubridate)
+library(purrr)
+
+phi <- bref_team_results("PHI", 2024)
+
+opponents <- unique(dat$Opp)
+
+# Function to get results for multiple teams
+get_all_team_results <- function(teams, year) {
+  # Map over the list of teams and apply bref_team_results
+  results <- map(teams, ~ bref_team_results(.x, year))
+  
+  # Combine all the results into a single DataFrame
+  combined_results <- bind_rows(results, .id = "team")
+  
+  return(combined_results)
+}
+
+# Call the function for the 2024 season
+all_team_results <- get_all_team_results(opponents, 2024)
+
+test <- all_team_results %>%
+  separate(Record, into = c("Wins", "Losses"), sep = "-") %>%
+  mutate(Wins_post = as.integer(Wins),
+    Losses_post = as.integer(Losses),
+    Wins_pre = ifelse(str_detect(Result, "W") == TRUE, Wins_post - 1, Wins_post),
+    Losses_pre = ifelse(str_detect(Result, "W") == FALSE, Losses_post - 1, Losses_post),
+    Win_Pct_Entering = 100*(Wins_pre / (Wins_pre + Losses_pre)))
+
+phls_and_opp <- left_join(phi, test %>% 
+                            select(Tm, Win_Pct_Entering, Date) %>%
+                            rename(Opp = Tm,
+                                   Opp_Win_Pct_Entering = Win_Pct_Entering) %>%
+                            mutate(Opp_PCt_under_500 = 10*(Opp_Win_Pct_Entering - 50))) %>%
+  mutate(W_L = ifelse(str_detect(Result, "W") == TRUE, "W", "L")) %>%
+  separate(Record, into = c("Wins", "Losses"), sep = "-") %>%
+  mutate(phi_win_pct = 100*(as.integer(Wins) / (as.integer(Wins) + as.integer(Losses))))
+
+ggplot()+
+  geom_bar(data = phls_and_opp, 
+           aes(x = Gm, y = Opp_PCt_under_500, fill = W_L), 
+           stat = "identity", alpha = 0.7)+
+  scale_fill_manual(values = c("red", "blue"))+
+  geom_line(data = phls_and_opp,
+                aes(x = Gm, y = 10*(phi_win_pct-50))) +
+  labs(title = "The 2024 Phillies Have Been Struggling Against Winning Teams\n...and Their Schedule Has Been Soft",
+       subtitle = "Phillies are .676 against sub-500 teams in 71 games, .458 against winning teams in 48 games\nBlack Line Represents Phillies Winning Percentage",
+       x = "Game Number",
+       y = "Opp. Win Pct on Gameday",   
+       caption = "Data - Baseball Reference, 8/15/24")+
+  theme_minimal()
+
+phls_and_opp %>% 
+  mutate(opp_over_500 = ifelse(Opp_PCt_under_500 > 0, "Over 500", "Under 500")) %>%
+  group_by(opp_over_500, W_L) %>% 
+  tally() %>%
+  pivot_wider(
+    names_from = W_L,
+    values_from = n,
+    names_prefix = ""
+  ) %>%
+  mutate(
+    W = replace_na(W, 0),
+    L = replace_na(L, 0),
+    Pct = W/(W+L),
+    Total_Games = W+L)
