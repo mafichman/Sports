@@ -43,7 +43,7 @@ phls_and_opp <- left_join(phi, test %>%
 ggplot()+
   geom_bar(data = phls_and_opp, 
            aes(x = Gm, y = Opp_PCt_under_500/1000, fill = factor(W_L, levels = c("W", "L"))), 
-           stat = "identity", alpha = 0.7)+
+           stat = "identity", alpha = 0.4)+
   scale_fill_manual(values = c("blue", "red"))+
  # geom_line(data = phls_and_opp,
   #              aes(x = Gm, y = (phi_win_pct-50)/100)) +
@@ -78,6 +78,7 @@ phls_and_opp %>%
   group_by(W_L) %>%
   summarize(mean_opp_pct = mean(Opp_Win_Pct_Entering, na.rm = TRUE))
 
+
 ggplot()+
   geom_violin(data = phls_and_opp,
               aes(x = factor(W_L, levels = c("W", "L")), 
@@ -97,6 +98,30 @@ ggplot()+
        color = "Outcome",
        caption = "Analysis: Michael Fichman, github.com/mafichman\nData - Baseball Reference, 8/15/24\nData exclude results vs. teams with 0-0 record")+
   theme_minimal()
+
+ggplot()+
+  geom_point(data = phls_and_opp,
+             aes(x = Opp_Win_Pct_Entering/100, y = RA, color = W_L),
+             alpha = 0.4)+
+  scale_color_manual(values = c("red", "blue"))+
+  geom_text(aes(x = .62, y = 10, label ="Bad\nZone"),
+            hjust = 1, vjust = 1, color = "black", size = 4, alpha = 0.6) +
+  xlim(0,1)+
+  labs(title = "Teams Over .500 Are Putting Runs On The Board Against the Phillies",
+       subtitle = "The Phillies Seldom Lose A Game When Allowing 5 or Fewer Runs",
+       x = "Opponent Winning Percentage",
+       y = "Opponent Runs",  
+       color = "Outcome",
+       caption = "Analysis: Michael Fichman, github.com/mafichman\nData - Baseball Reference, 8/15/24\nData exclude results vs. teams with 0-0 record")+
+  theme_minimal()
+
+ggplot()+
+  geom_point(data = phls_and_opp,
+             aes(x = Opp_Win_Pct_Entering/100, y = R, color = W_L),
+             alpha = 0.4)+
+  scale_color_manual(values = c("red", "blue"))+
+  theme_minimal()
+
 
 # Now try this with the dodgers
 
