@@ -56,7 +56,7 @@ ggplot()+
        x = "Game Number",
        y = "Opp. Win Pct Relative to .500",  
        fill = "Outcome",
-       caption = "Data - Baseball Reference, 8/15/24")+
+       caption = "Analysis: Michael Fichman, github.com/mafichman\nData - Baseball Reference, 8/15/24\nData exclude results vs. teams with 0-0 record")+
   theme_minimal()
 
 phls_and_opp %>% 
@@ -74,6 +74,29 @@ phls_and_opp %>%
     Pct = W/(W+L),
     Total_Games = W+L)
 
+phls_and_opp %>%
+  group_by(W_L) %>%
+  summarize(mean_opp_pct = mean(Opp_Win_Pct_Entering, na.rm = TRUE))
+
+ggplot()+
+  geom_violin(data = phls_and_opp,
+              aes(x = factor(W_L, levels = c("W", "L")), 
+                  y = Opp_Win_Pct_Entering/100,
+                  color = W_L), fill = "transparent")+
+ # geom_point(data = phls_and_opp,
+  #           aes(x = factor(W_L, levels = c("W", "L")), 
+   #              y = Opp_Win_Pct_Entering/100,
+    #             color = W_L),
+     #        position = position_jitter(seed = 1, width = 0.05))+
+  scale_color_manual(values = c("red", "blue"))+
+  ylim(0,1)+
+  labs(title = "The 2024 Phillies Losses Are Predominantly Against Teams Over 500",
+       subtitle = "Phillies losses are to teams with an average winning percentage of .509,\nAverage winning percentage of teams the Phillies beat is .474",
+       x = "Phillies Result",
+       y = "Opponent's Win Pct",  
+       color = "Outcome",
+       caption = "Analysis: Michael Fichman, github.com/mafichman\nData - Baseball Reference, 8/15/24\nData exclude results vs. teams with 0-0 record")+
+  theme_minimal()
 
 # Now try this with the dodgers
 
@@ -117,7 +140,7 @@ ggplot()+
        x = "Game Number",
        y = "Opp. Win Pct Relative to .500",  
        fill = "Outcome",
-       caption = "Data - Baseball Reference, 8/16/24\nData exclude results vs. teams with 0-0 record")+
+       caption = "Analysis: Michael Fichman, github.com/mafichman\nData - Baseball Reference, 8/16/24\nData exclude results vs. teams with 0-0 record")+
   theme_minimal()
 
 lad_and_opp %>% 
@@ -172,12 +195,12 @@ ggplot()+
             hjust = 1, vjust = 1, color = "black", size = 4) +
   geom_text(aes(x = max(lad_and_opp$Gm) - 10, y = -0.25, label = "Opponent below .500"),
             hjust = 1, vjust = 0, color = "black", size = 4) +
-  labs(title = "The 2024 Dodgers Are Holding Their Own Against Winning Teams\nBut they haven't played very many games against them.",
-       subtitle = "Dodgers are .602 in 83 games vs sub-500 teams, .514 in 37 games vs teams over .500",
+  labs(title = "The 2023 Phillies.",
+       subtitle = ".629 in 89 games vs sub-500 teams, .472 in 72 games vs teams over .500",
        x = "Game Number",
        y = "Opp. Win Pct Relative to .500",  
        fill = "Outcome",
-       caption = "Data - Baseball Reference, 8/16/24\nData exclude results vs. teams with 0-0 record")+
+       caption = "Analysis: Michael Fichman, github.com/mafichman\nData - Baseball Reference, 8/16/24\nData exclude results vs. teams with 0-0 record")+
   theme_minimal()
 
 phi_2023_and_opp %>% 
